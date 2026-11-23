@@ -176,17 +176,24 @@ const json = async <T>(op: wasm.CloudOperation): Promise<T> =>
 export async function register(
   code: string,
   deviceDesc = "browser-chrome",
+  serverUrl?: string,
 ): Promise<string> {
   const done = await run(
-    wasm.cloudRegister(code, deviceDesc, globalThis.crypto.randomUUID()),
+    wasm.cloudRegister(code, deviceDesc, globalThis.crypto.randomUUID(), serverUrl),
   );
   return done.text!;
 }
 
 /** A session on the cloud, from a device token. */
-export async function connectCloud(deviceToken: string): Promise<Cloud> {
-  const done = await run(wasm.cloudAuth(deviceToken));
-  return new Cloud(new wasm.CloudSession(done.text!));
+export async function connectCloud(
+  deviceToken: string,
+  serverUrl?: string,
+): Promise<Cloud> {
+  const done = await run(wasm.cloudAuth(deviceToken, serverUrl));
+  const options = serverUrl
+    ? JSON.stringify({ rawHost: serverUrl, uploadHost: serverUrl })
+    : undefined;
+  return new Cloud(new wasm.CloudSession(done.text!, options));
 }
 
 // --- The cloud ---------------------------------------------------------------

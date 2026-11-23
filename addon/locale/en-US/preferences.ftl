@@ -1,9 +1,11 @@
 pref-connection-title = reMarkable connection
+pref-connection-server-url = Custom server URL
+pref-connection-server-url-help = Leave empty for the official cloud. Reconnect after changing the server.
 pref-connection-code = One-time code
 pref-connection-connect =
     .label = Connect
-pref-connection-status-disconnected = Not connected. Get a code at my.remarkable.com/device/browser/connect
-pref-connection-status-connected = Connected to reMarkable cloud.
+pref-connection-status-disconnected = Not connected. Get a one-time code from your cloud server.
+pref-connection-status-connected = Connected to the cloud.
 pref-connection-status-connecting = Connecting…
 pref-connection-status-error = Connection failed: { $error }
 

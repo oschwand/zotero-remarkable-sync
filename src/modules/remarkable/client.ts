@@ -17,9 +17,41 @@ export class NotConnectedError extends Error {
 }
 
 let cachedApi: RemarkableApi | null = null;
+let cachedToken = "";
+let cachedServerUrl = "";
+
+/** Normalize a custom base URL without allowing credentials or URL suffixes. */
+export function normalizeServerUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    throw new Error("Invalid cloud server URL");
+  }
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error("Cloud server URL must be an HTTP(S) URL without credentials, query, or fragment");
+  }
+  return url.href.replace(/\/+$/, "");
+}
 
 export function isConnected(): boolean {
-  return !!getPref("deviceToken");
+  try {
+    return (
+      !!getPref("deviceToken") &&
+      normalizeServerUrl(getPref("serverUrl") || "") ===
+        (getPref("deviceTokenServerUrl") || "")
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -28,13 +60,17 @@ export function isConnected(): boolean {
  */
 export async function connect(code: string): Promise<void> {
   ensureNetworkGlobals();
-  const token = await register(code.trim(), "browser-chrome");
+  const serverUrl = normalizeServerUrl(getPref("serverUrl") || "");
+  const token = await register(code.trim(), "browser-chrome", serverUrl || undefined);
   setPref("deviceToken", token);
+  setPref("deviceTokenServerUrl", serverUrl);
+  for (const k of ["folderPath", "folderId", "folderParent"]) clearPref(k);
   cachedApi = null;
 }
 
 export function disconnect(): void {
   clearPref("deviceToken");
+  clearPref("deviceTokenServerUrl");
   // Folder ids belong to the account
   for (const k of ["folderPath", "folderId", "folderParent"]) clearPref(k);
   cachedApi = null;
@@ -42,11 +78,17 @@ export function disconnect(): void {
 
 /** Get an authenticated API instance, creating one from the stored token. */
 export async function getApi(): Promise<RemarkableApi> {
-  if (cachedApi) return cachedApi;
-  ensureNetworkGlobals();
+  const serverUrl = normalizeServerUrl(getPref("serverUrl") || "");
   const token = getPref("deviceToken");
-  if (!token) throw new NotConnectedError();
-  cachedApi = await connectCloud(token);
+  if (!token || serverUrl !== (getPref("deviceTokenServerUrl") || "")) {
+    throw new NotConnectedError();
+  }
+  if (cachedApi && cachedToken === token && cachedServerUrl === serverUrl)
+    return cachedApi;
+  ensureNetworkGlobals();
+  cachedApi = await connectCloud(token, serverUrl || undefined);
+  cachedToken = token;
+  cachedServerUrl = serverUrl;
   return cachedApi;
 }
 

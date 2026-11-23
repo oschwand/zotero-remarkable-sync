@@ -11,6 +11,10 @@ pref("folderId", "");
 pref("folderParent", "");
 // reMarkable device token obtained from the one-time code (empty = not connected).
 pref("deviceToken", "");
+// Empty uses the official reMarkable cloud.
+pref("serverUrl", "");
+// Server for which the current device token was issued.
+pref("deviceTokenServerUrl", "");
 // Sync trigger: "manual" (on demand only) or "interval" (timer).
 pref("syncMode", "manual");
 // Auto-sync interval in minutes (used when syncMode === "interval").

@@ -1,6 +1,5 @@
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
-import { getPref } from "../utils/prefs";
 import * as client from "./remarkable/client";
 import * as scheduler from "./scheduler";
 
@@ -45,7 +44,7 @@ function setStatus(text: string) {
 }
 
 export function updateConnectionStatus() {
-  const connected = !!getPref("deviceToken");
+  const connected = client.isConnected();
   setStatus(
     getString(
       connected
@@ -56,6 +55,7 @@ export function updateConnectionStatus() {
 }
 
 function bindPrefEvents() {
+  el("server-url")?.addEventListener("change", updateConnectionStatus);
   el("connect")?.addEventListener("command", async () => {
     const input = el("code") as HTMLInputElement | null;
     const code = input?.value?.trim();

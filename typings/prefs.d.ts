@@ -13,6 +13,8 @@ declare namespace _ZoteroTypes {
       "folderId": string;
       "folderParent": string;
       "deviceToken": string;
+      "serverUrl": string;
+      "deviceTokenServerUrl": string;
       "syncMode": string;
       "syncInterval": number;
       "deleteOnUnsync": boolean;
