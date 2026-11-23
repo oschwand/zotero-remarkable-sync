@@ -24,7 +24,6 @@ PDFs **and annotations** in sync with a [reMarkable](https://remarkable.com/) ta
   library, compiled to WebAssembly and shipped in the plugin; no external binary
   required.
 
-
 ## How it works
 
 ```
@@ -66,6 +65,13 @@ The plugin keeps the Zotero side: credentials, the sync engine and the UI.
 In the plugin preferences, paste a one-time code from
 <https://my.remarkable.com/device/browser/connect> and click **Connect**. The resulting
 device token is stored in Zotero preferences.
+
+To use [rmfakecloud](https://ddvk.github.io/rmfakecloud/), enter your server's
+base URL in **Custom server URL**, obtain a one-time code from that server, and
+click **Connect**. Leave the URL empty for the official cloud. Use HTTPS to
+protect your credentials; HTTP sends them unencrypted. Changing servers requires
+a new connection and does not migrate documents or existing sync links between
+accounts. The rmfakecloud account must use the differential sync API.
 
 ## Usage
 

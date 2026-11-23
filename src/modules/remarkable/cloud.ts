@@ -179,7 +179,12 @@ export async function register(
   serverUrl?: string,
 ): Promise<string> {
   const done = await run(
-    wasm.cloudRegister(code, deviceDesc, globalThis.crypto.randomUUID(), serverUrl),
+    wasm.cloudRegister(
+      code,
+      deviceDesc,
+      globalThis.crypto.randomUUID(),
+      serverUrl,
+    ),
   );
   return done.text!;
 }

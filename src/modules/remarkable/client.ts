@@ -26,7 +26,9 @@ export function normalizeServerUrl(value: string): string {
   if (!trimmed) return "";
   let url: URL;
   try {
-    url = new URL(trimmed);
+    const URLConstructor = globalThis.URL ?? Zotero.getMainWindow()?.URL;
+    if (!URLConstructor) throw new Error("URL parser unavailable");
+    url = new URLConstructor(trimmed);
   } catch {
     throw new Error("Invalid cloud server URL");
   }
@@ -37,7 +39,9 @@ export function normalizeServerUrl(value: string): string {
     url.search ||
     url.hash
   ) {
-    throw new Error("Cloud server URL must be an HTTP(S) URL without credentials, query, or fragment");
+    throw new Error(
+      "Cloud server URL must be an HTTP(S) URL without credentials, query, or fragment",
+    );
   }
   return url.href.replace(/\/+$/, "");
 }
@@ -61,7 +65,11 @@ export function isConnected(): boolean {
 export async function connect(code: string): Promise<void> {
   ensureNetworkGlobals();
   const serverUrl = normalizeServerUrl(getPref("serverUrl") || "");
-  const token = await register(code.trim(), "browser-chrome", serverUrl || undefined);
+  const token = await register(
+    code.trim(),
+    "browser-chrome",
+    serverUrl || undefined,
+  );
   setPref("deviceToken", token);
   setPref("deviceTokenServerUrl", serverUrl);
   for (const k of ["folderPath", "folderId", "folderParent"]) clearPref(k);
