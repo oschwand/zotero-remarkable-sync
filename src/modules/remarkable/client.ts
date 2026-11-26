@@ -8,6 +8,7 @@ import type { UploadPdfOptions } from "./annotations";
 import { getPref, setPref, clearPref } from "../../utils/prefs";
 import { ensureNetworkGlobals } from "../../utils/globals";
 import { log, errMsg } from "../../utils/log";
+import { allRecords, removeRecord } from "../sync/state";
 
 export class NotConnectedError extends Error {
   constructor() {
@@ -73,7 +74,18 @@ export async function connect(code: string): Promise<void> {
   // Registering only proves the code was valid: check that the server also
   // serves the sync API before reporting a connection.
   const api = await connectCloud(token, serverUrl || undefined);
-  await api.listRefs(true);
+  const ids = new Set((await api.listRefs(true)).map((r) => r.id));
+  if (serverUrl !== (getPref("deviceTokenServerUrl") || "")) {
+    // Records of documents that are not on this server belong to another
+    // account: left alone, a sync would take them for documents deleted on
+    // the device and stop syncing them instead of uploading.
+    for (const [key, rec] of Object.entries(await allRecords())) {
+      if (!ids.has(rec.docId)) {
+        log(`connect: dropping the record of "${rec.visibleName}" (${key})`);
+        await removeRecord(key);
+      }
+    }
+  }
   setPref("deviceToken", token);
   setPref("deviceTokenServerUrl", serverUrl);
   for (const k of ["folderPath", "folderId", "folderParent"]) clearPref(k);
