@@ -70,6 +70,10 @@ export async function connect(code: string): Promise<void> {
     "browser-chrome",
     serverUrl || undefined,
   );
+  // Registering only proves the code was valid: check that the server also
+  // serves the sync API before reporting a connection.
+  const api = await connectCloud(token, serverUrl || undefined);
+  await api.listRefs(true);
   setPref("deviceToken", token);
   setPref("deviceTokenServerUrl", serverUrl);
   for (const k of ["folderPath", "folderId", "folderParent"]) clearPref(k);

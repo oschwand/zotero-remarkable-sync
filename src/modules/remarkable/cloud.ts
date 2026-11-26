@@ -100,12 +100,15 @@ async function perform(item: Request | Sleep): Promise<Response | undefined> {
       headers: item.headers,
       body: item.body,
     });
+    if (r.status >= 400)
+      log(`cloud: ${item.method} ${item.url} -> ${r.status}`);
     return {
       status: r.status,
       statusText: r.statusText,
       body: new Uint8Array(await r.arrayBuffer()),
     };
   } catch (e) {
+    log(`cloud: ${item.method} ${item.url} failed: ${String(e)}`);
     return { networkError: String(e) };
   }
 }
